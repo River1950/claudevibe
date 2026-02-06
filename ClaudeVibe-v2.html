@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClaudeVibe - 编程氛围音乐</title>
+    <style>
+        /* Dieter Rams 设计理念: Less, but better */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: #F5F5F5; /* 极简浅灰背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: #FFFFFF;
+            border-radius: 2px; /* 极小的圆角 */
+            padding: 48px;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* 非常轻的阴影 */
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        /* 音乐风格按钮 - 90%低饱和度 */
+        .music-styles {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .style-btn {
+            padding: 20px 16px;
+            border: 1px solid #E0E0E0;
+            background: #FAFAFA;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 14px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .style-btn:hover {
+            background: #F5F5F5;
+            border-color: #D0D0D0;
+        }
+
+        .style-btn.active {
+            background: #FFFFFF;
+            border-color: #999;
+            color: #333;
+        }
+
+        .style-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .style-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 控制按钮 - 10%高饱和度 */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .play-btn {
+            background: #2ECC71; /* 唯一的高饱和色 - 播放按钮 */
+            color: white;
+        }
+
+        .play-btn:hover {
+            background: #27AE60;
+        }
+
+        .play-btn:disabled {
+            background: #E0E0E0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .stop-btn {
+            background: #E8E8E8;
+            color: #666;
+        }
+
+        .stop-btn:hover {
+            background: #D8D8D8;
+        }
+
+        /* Claude 状态区域 */
+        .claude-status {
+            background: #FAFAFA;
+            padding: 16px;
+            border-radius: 2px;
+            margin-bottom: 24px;
+            border-left: 3px solid #E0E0E0;
+        }
+
+        .claude-status.running {
+            border-left-color: #2ECC71;
+        }
+
+        .claude-status.error {
+            border-left-color: #E74C3C;
+        }
+
+        .claude-status.completed {
+            border-left-color: #3498DB;
+        }
+
+        .claude-status-title {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .claude-status-text {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 状态信息 */
+        .status {
+            background: #FAFAFA;
+            padding: 16px;
+            border-radius: 2px;
+            margin-bottom: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: #999;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 音量控制 */
+        .volume-control {
+            margin-bottom: 24px;
+        }
+
+        .volume-control label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 2px;
+            border-radius: 1px;
+            background: #E0E0E0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #333;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #666;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 极简的可视化 */
+        .visualizer {
+            height: 60px;
+            background: #FAFAFA;
+            border-radius: 2px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 8px;
+            gap: 2px;
+            margin-bottom: 24px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #E0E0E0;
+            border-radius: 1px;
+            transition: all 0.15s ease;
+        }
+
+        .bar.active {
+            background: #999;
+        }
+
+        /* Claude事件模拟按钮（仅用于演示） */
+        .demo-controls {
+            background: #FAFAFA;
+            padding: 16px;
+            border-radius: 2px;
+            margin-top: 24px;
+            border-top: 1px solid #E0E0E0;
+        }
+
+        .demo-title {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .demo-btn {
+            padding: 10px;
+            border: 1px solid #E0E0E0;
+            background: white;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn:hover {
+            background: #F5F5F5;
+            border-color: #D0D0D0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ClaudeVibe</h1>
+        <p class="subtitle">Ambient sound for focused coding</p>
+
+        <!-- Claude 状态显示 -->
+        <div class="claude-status" id="claudeStatus">
+            <div class="claude-status-title">Claude Status</div>
+            <div class="claude-status-text" id="claudeStatusText">Idle</div>
+        </div>
+
+        <!-- 音乐风格 -->
+        <div class="music-styles">
+            <button class="style-btn" data-style="lofi">
+                <div class="style-name">Lo-fi</div>
+                <div class="style-desc">Gentle rhythm</div>
+            </button>
+            <button class="style-btn" data-style="electronic">
+                <div class="style-name">Electronic</div>
+                <div class="style-desc">Energetic pulse</div>
+            </button>
+            <button class="style-btn" data-style="ambient">
+                <div class="style-name">Ambient</div>
+                <div class="style-desc">Calm focus</div>
+            </button>
+            <button class="style-btn" data-style="focus">
+                <div class="style-name">Deep Focus</div>
+                <div class="style-desc">Pure concentration</div>
+            </button>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="control-btn play-btn" id="playBtn">Start</button>
+            <button class="control-btn stop-btn" id="stopBtn">Stop</button>
+        </div>
+
+        <!-- 状态信息 -->
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Status</span>
+                <span class="status-value" id="statusText">Stopped</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Style</span>
+                <span class="status-value" id="styleText">—</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Duration</span>
+                <span class="status-value" id="timeText">00:00</span>
+            </div>
+        </div>
+
+        <!-- 音量控制 -->
+        <div class="volume-control">
+            <label>Volume — <span id="volumeValue">60</span>%</label>
+            <input type="range" id="volumeSlider" min="0" max="100" value="60">
+        </div>
+
+        <!-- 可视化 -->
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+
+        <!-- Claude事件模拟（仅演示用） -->
+        <div class="demo-controls">
+            <div class="demo-title">Simulate Claude Events</div>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="simulateClaudeEvent('running')">Running</button>
+                <button class="demo-btn" onclick="simulateClaudeEvent('thinking')">Thinking</button>
+                <button class="demo-btn" onclick="simulateClaudeEvent('error')">Error</button>
+                <button class="demo-btn" onclick="simulateClaudeEvent('completed')">Completed</button>
+                <button class="demo-btn" onclick="simulateClaudeEvent('idle')">Idle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Web Audio API 设置
+        // ============================================
+        let audioContext;
+        let masterGain;
+        let currentStyle = 'lofi';
+        let isPlaying = false;
+        let startTime = 0;
+        let animationId;
+        let musicInterval;
+        let claudeState = 'idle';
+
+        // 音符频率（改进的音阶）
+        const scales = {
+            // C大调五声音阶（更和谐）
+            pentatonic: [261.63, 293.66, 329.63, 392.00, 440.00],
+            // Am和声小调（更有氛围）
+            aminor: [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 415.30],
+            // 低音
+            bass: [65.41, 73.42, 82.41, 87.31, 98.00]
+        };
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.gain.value = 0.6;
+                masterGain.connect(audioContext.destination);
+            }
+        }
+
+        // ============================================
+        // 改进的音乐生成 - 更饱满的声音
+        // ============================================
+
+        // Lo-fi音乐生成 - 改进版
+        function generateLofi() {
+            const now = audioContext.currentTime;
+
+            // 1. 更深沉的底鼓
+            const kick = audioContext.createOscillator();
+            const kickGain = audioContext.createGain();
+            kick.frequency.setValueAtTime(120, now);
+            kick.frequency.exponentialRampToValueAtTime(0.01, now + 0.4);
+            kickGain.gain.setValueAtTime(0.6, now);
+            kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            kick.connect(kickGain);
+            kickGain.connect(masterGain);
+            kick.start(now);
+            kick.stop(now + 0.4);
+
+            // 2. 副鼓（snare）
+            const snare = audioContext.createBufferSource();
+            const snareBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+            const snareData = snareBuffer.getChannelData(0);
+            for (let i = 0; i < snareData.length; i++) {
+                snareData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioContext.sampleRate * 0.05));
+            }
+            snare.buffer = snareBuffer;
+            const snareGain = audioContext.createGain();
+            snareGain.gain.value = 0.3;
+            snare.connect(snareGain);
+            snareGain.connect(masterGain);
+            snare.start(now + 0.5);
+
+            // 3. 更丰富的旋律（多层）
+            const melody = scales.pentatonic;
+            [0, 0.5, 1, 1.5].forEach((time, i) => {
+                // 主旋律
+                const osc1 = audioContext.createOscillator();
+                const gain1 = audioContext.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.value = melody[Math.floor(Math.random() * melody.length)];
+                gain1.gain.setValueAtTime(0, now + time);
+                gain1.gain.linearRampToValueAtTime(0.15, now + time + 0.05);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + time + 0.5);
+                osc1.connect(gain1);
+                gain1.connect(masterGain);
+                osc1.start(now + time);
+                osc1.stop(now + time + 0.5);
+
+                // 和声层
+                const osc2 = audioContext.createOscillator();
+                const gain2 = audioContext.createGain();
+                osc2.type = 'triangle';
+                osc2.frequency.value = melody[Math.floor(Math.random() * melody.length)] * 0.5;
+                gain2.gain.setValueAtTime(0, now + time);
+                gain2.gain.linearRampToValueAtTime(0.08, now + time + 0.05);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + time + 0.6);
+                osc2.connect(gain2);
+                gain2.connect(masterGain);
+                osc2.start(now + time);
+                osc2.stop(now + time + 0.6);
+            });
+
+            // 4. 持续的bass line
+            const bass = audioContext.createOscillator();
+            const bassGain = audioContext.createGain();
+            bass.type = 'sine';
+            bass.frequency.value = scales.bass[Math.floor(Math.random() * scales.bass.length)];
+            bassGain.gain.setValueAtTime(0, now);
+            bassGain.gain.linearRampToValueAtTime(0.2, now + 0.1);
+            bassGain.gain.setValueAtTime(0.2, now + 1.8);
+            bassGain.gain.linearRampToValueAtTime(0, now + 2);
+            bass.connect(bassGain);
+            bassGain.connect(masterGain);
+            bass.start(now);
+            bass.stop(now + 2);
+        }
+
+        // 电子音乐 - 改进版
+        function generateElectronic() {
+            const now = audioContext.currentTime;
+
+            // 更强劲的bass
+            const bass = audioContext.createOscillator();
+            const bassGain = audioContext.createGain();
+            const bassFilter = audioContext.createBiquadFilter();
+
+            bass.type = 'sawtooth';
+            bass.frequency.value = 55;
+            bassFilter.type = 'lowpass';
+            bassFilter.frequency.value = 200;
+            bassGain.gain.setValueAtTime(0.4, now);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+            bass.connect(bassFilter);
+            bassFilter.connect(bassGain);
+            bassGain.connect(masterGain);
+            bass.start(now);
+            bass.stop(now + 0.5);
+
+            // 高频合成器音效
+            for (let i = 0; i < 8; i++) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'square';
+                osc.frequency.value = 440 * Math.pow(2, Math.floor(Math.random() * 3));
+                gain.gain.setValueAtTime(0.1, now + i * 0.125);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.125 + 0.1);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now + i * 0.125);
+                osc.stop(now + i * 0.125 + 0.1);
+            }
+
+            // Pad层（持续音）
+            const pad = audioContext.createOscillator();
+            const padGain = audioContext.createGain();
+            const padFilter = audioContext.createBiquadFilter();
+            pad.type = 'sawtooth';
+            pad.frequency.value = 220;
+            padFilter.type = 'lowpass';
+            padFilter.frequency.setValueAtTime(400, now);
+            padFilter.frequency.linearRampToValueAtTime(800, now + 1);
+            padGain.gain.setValueAtTime(0.15, now);
+            pad.connect(padFilter);
+            padFilter.connect(padGain);
+            padGain.connect(masterGain);
+            pad.start(now);
+            pad.stop(now + 1);
+        }
+
+        // 环境音 - 改进版
+        function generateAmbient() {
+            const now = audioContext.currentTime;
+
+            // 更丰富的白噪音
+            const bufferSize = audioContext.sampleRate * 4;
+            const buffer = audioContext.createBuffer(2, bufferSize, audioContext.sampleRate);
+
+            for (let channel = 0; channel < 2; channel++) {
+                const data = buffer.getChannelData(channel);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.15;
+                }
+            }
+
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(300, now);
+            filter.frequency.linearRampToValueAtTime(600, now + 2);
+            filter.frequency.linearRampToValueAtTime(300, now + 4);
+
+            const gain = audioContext.createGain();
+            gain.gain.value = 0.4;
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+            noise.start(now);
+            noise.stop(now + 4);
+
+            // 深沉的和弦
+            const chordNotes = [130.81, 164.81, 196.00, 246.94];
+            chordNotes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.12, now + 1);
+                gain.gain.setValueAtTime(0.12, now + 3);
+                gain.gain.linearRampToValueAtTime(0, now + 4);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 4);
+            });
+        }
+
+        // 深度专注 - 改进版（更好的粉红噪音）
+        function generateFocus() {
+            const now = audioContext.currentTime;
+            const bufferSize = audioContext.sampleRate * 5;
+            const buffer = audioContext.createBuffer(2, bufferSize, audioContext.sampleRate);
+
+            for (let channel = 0; channel < 2; channel++) {
+                const data = buffer.getChannelData(channel);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.18;
+                    b6 = white * 0.115926;
+                }
+            }
+
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 1000;
+            filter.Q.value = 0.7;
+
+            const gain = audioContext.createGain();
+            gain.gain.value = 0.5;
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+            noise.start(now);
+        }
+
+        // ============================================
+        // Claude 状态音效
+        // ============================================
+
+        // Claude 开始运行的提示音
+        function playClaudeStartSound() {
+            const now = audioContext.currentTime;
+            [523.25, 659.25].forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, now + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.3);
+            });
+        }
+
+        // Claude 错误提示音
+        function playClaudeErrorSound() {
+            const now = audioContext.currentTime;
+            [392.00, 329.63, 261.63].forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.frequency.value = freq;
+                osc.type = 'triangle';
+                gain.gain.setValueAtTime(0.25, now + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.4);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now + i * 0.15);
+                osc.stop(now + i * 0.15 + 0.4);
+            });
+        }
+
+        // Claude 完成庆祝音
+        function playClaudeCompleteSound() {
+            const now = audioContext.currentTime;
+            const celebrationNotes = [523.25, 659.25, 783.99, 1046.50];
+            celebrationNotes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.2, now + i * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.5);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now + i * 0.08);
+                osc.stop(now + i * 0.08 + 0.5);
+            });
+        }
+
+        // Claude 思考中的柔和音（可选）
+        function playClaudeThinkingSound() {
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.frequency.value = 440;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.5);
+            gain.gain.linearRampToValueAtTime(0.08, now + 1);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 1);
+        }
+
+        // ============================================
+        // Claude 状态管理
+        // ============================================
+
+        function updateClaudeStatus(state) {
+            claudeState = state;
+            const statusEl = document.getElementById('claudeStatus');
+            const statusTextEl = document.getElementById('claudeStatusText');
+
+            // 移除所有状态class
+            statusEl.classList.remove('running', 'error', 'completed');
+
+            switch(state) {
+                case 'running':
+                    statusEl.classList.add('running');
+                    statusTextEl.textContent = 'Running';
+                    playClaudeStartSound();
+                    if (!isPlaying) {
+                        document.getElementById('playBtn').click();
+                    }
+                    break;
+
+                case 'thinking':
+                    statusEl.classList.add('running');
+                    statusTextEl.textContent = 'Thinking...';
+                    statusTextEl.classList.add('pulsing');
+                    playClaudeThinkingSound();
+                    break;
+
+                case 'error':
+                    statusEl.classList.add('error');
+                    statusTextEl.textContent = 'Error occurred';
+                    statusTextEl.classList.remove('pulsing');
+                    playClaudeErrorSound();
+                    break;
+
+                case 'completed':
+                    statusEl.classList.add('completed');
+                    statusTextEl.textContent = 'Task completed';
+                    statusTextEl.classList.remove('pulsing');
+                    playClaudeCompleteSound();
+                    break;
+
+                case 'idle':
+                default:
+                    statusTextEl.textContent = 'Idle';
+                    statusTextEl.classList.remove('pulsing');
+                    break;
+            }
+        }
+
+        // 模拟 Claude 事件（供测试使用）
+        function simulateClaudeEvent(event) {
+            initAudio();
+            updateClaudeStatus(event);
+        }
+
+        // 暴露给外部调用的API
+        window.ClaudeVibe = {
+            onClaudeStart: () => simulateClaudeEvent('running'),
+            onClaudeThinking: () => simulateClaudeEvent('thinking'),
+            onClaudeError: () => simulateClaudeEvent('error'),
+            onClaudeComplete: () => simulateClaudeEvent('completed'),
+            onClaudeIdle: () => simulateClaudeEvent('idle')
+        };
+
+        // ============================================
+        // 音乐循环控制
+        // ============================================
+
+        function startMusicLoop() {
+            if (musicInterval) clearInterval(musicInterval);
+
+            const intervals = {
+                'lofi': 2000,
+                'electronic': 1000,
+                'ambient': 4000,
+                'focus': 5000
+            };
+
+            const generators = {
+                'lofi': generateLofi,
+                'electronic': generateElectronic,
+                'ambient': generateAmbient,
+                'focus': generateFocus
+            };
+
+            // 立即播放一次
+            generators[currentStyle]();
+
+            // 设置循环
+            musicInterval = setInterval(() => {
+                if (isPlaying) {
+                    generators[currentStyle]();
+                }
+            }, intervals[currentStyle]);
+        }
+
+        function stopMusicLoop() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+        }
+
+        // ============================================
+        // 可视化
+        // ============================================
+
+        function updateVisualizer() {
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach((bar, i) => {
+                const height = Math.random() * 70 + 20;
+                bar.style.height = height + '%';
+                if (height > 60) {
+                    bar.classList.add('active');
+                } else {
+                    bar.classList.remove('active');
+                }
+            });
+
+            if (isPlaying) {
+                animationId = requestAnimationFrame(updateVisualizer);
+            }
+        }
+
+        function resetVisualizer() {
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.style.height = '20%';
+                bar.classList.remove('active');
+            });
+        }
+
+        // ============================================
+        // 时间更新
+        // ============================================
+
+        function updateTime() {
+            if (isPlaying) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timeText').textContent = `${minutes}:${seconds}`;
+                setTimeout(updateTime, 1000);
+            }
+        }
+
+        // ============================================
+        // UI 控制
+        // ============================================
+
+        // 风格选择
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStyle = btn.dataset.style;
+
+                const styleNames = {
+                    'lofi': 'Lo-fi',
+                    'electronic': 'Electronic',
+                    'ambient': 'Ambient',
+                    'focus': 'Deep Focus'
+                };
+                document.getElementById('styleText').textContent = styleNames[currentStyle];
+
+                // 如果正在播放，切换音乐
+                if (isPlaying) {
+                    stopMusicLoop();
+                    startMusicLoop();
+                }
+            });
+        });
+
+        // 播放按钮
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (!isPlaying) {
+                initAudio();
+                isPlaying = true;
+                startTime = Date.now();
+
+                document.getElementById('statusText').textContent = 'Playing';
+                document.getElementById('playBtn').disabled = true;
+
+                startMusicLoop();
+                updateVisualizer();
+                updateTime();
+            }
+        });
+
+        // 停止按钮
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            isPlaying = false;
+            stopMusicLoop();
+            document.getElementById('statusText').textContent = 'Stopped';
+            document.getElementById('timeText').textContent = '00:00';
+            document.getElementById('playBtn').disabled = false;
+
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+
+            resetVisualizer();
+        });
+
+        // 音量控制
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            document.getElementById('volumeValue').textContent = e.target.value;
+            if (masterGain) {
+                masterGain.gain.value = volume;
+            }
+        });
+
+        // 默认选择 Lo-fi
+        document.querySelector('[data-style="lofi"]').click();
+    </script>
+</body>
+</html>

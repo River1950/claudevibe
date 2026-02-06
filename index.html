@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClaudeVibe - 为Claude编程者打造的专注音乐工具。极简设计，智能音乐，深度联动。">
+    <meta name="keywords" content="Claude, 编程音乐, 专注, Lo-fi, Vibe Coding">
+    <title>ClaudeVibe - 沉浸式编程音乐</title>
+
+    <!-- PWA 支持 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2ECC71">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: #F5F5F5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 48px;
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 20px 48px;
+            background: #2ECC71;
+            color: white;
+            text-decoration: none;
+            border-radius: 2px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #27AE60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .secondary-cta {
+            display: inline-block;
+            margin-top: 16px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            border-bottom: 1px solid #CCC;
+        }
+
+        .secondary-cta:hover {
+            color: #333;
+            border-bottom-color: #999;
+        }
+
+        /* 特性区域 */
+        .features {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .feature {
+            background: white;
+            padding: 32px;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .feature h3 {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .feature p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* 截图区域 */
+        .screenshot {
+            max-width: 800px;
+            margin: 80px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .screenshot img {
+            width: 100%;
+            border-radius: 2px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        /* 使用场景 */
+        .use-cases {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .use-cases-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .use-cases h2 {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 48px;
+        }
+
+        .use-case {
+            margin-bottom: 40px;
+            padding: 24px;
+            background: #FAFAFA;
+            border-radius: 2px;
+            border-left: 3px solid #2ECC71;
+        }
+
+        .use-case h4 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .use-case p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* 社交分享 */
+        .social-share {
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .social-share h2 {
+            font-size: 28px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            padding: 12px 24px;
+            border: 1px solid #E0E0E0;
+            background: white;
+            border-radius: 2px;
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .share-btn:hover {
+            border-color: #999;
+            color: #333;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: #999;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        footer a {
+            color: #CCC;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+            }
+
+            .cta-button {
+                padding: 16px 32px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="logo">🎵</div>
+        <h1>ClaudeVibe</h1>
+        <p class="subtitle">沉浸式编程音乐，为 Claude 开发者而生</p>
+
+        <a href="ClaudeVibe-v2.html" class="cta-button">立即开始</a>
+
+        <a href="#features" class="secondary-cta">了解更多 ↓</a>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <h3>极简设计</h3>
+                <p>遵循 Dieter Rams 设计哲学，90% 低饱和度配色，零干扰，让你专注编程。</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🎵</div>
+                <h3>智能音乐</h3>
+                <p>程序化生成 Lo-fi、Electronic、Ambient、Deep Focus 四种风格，永不重复。</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>Claude 联动</h3>
+                <p>深度集成 Claude 状态，运行、思考、错误、完成，每个状态都有独特音效反馈。</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <h3>零安装</h3>
+                <p>无需下载、配置，打开即用。也支持 PWA 安装为应用，随时快速启动。</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">💻</div>
+                <h3>跨平台</h3>
+                <p>支持所有现代浏览器，Windows、macOS、Linux 全平台兼容。</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>超轻量</h3>
+                <p>仅 25KB，秒开即用，CPU 占用 < 1%，内存占用 < 50MB。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="use-cases">
+        <div class="use-cases-container">
+            <h2>使用场景</h2>
+
+            <div class="use-case">
+                <h4>🎧 日常编程 - Lo-fi</h4>
+                <p>轻快的节奏配合柔和的旋律，适合日常写代码。音量建议 60%。</p>
+            </div>
+
+            <div class="use-case">
+                <h4>⚡ 快速开发 - Electronic</h4>
+                <p>充满活力的电子音，让你进入高效开发模式。音量建议 50%。</p>
+            </div>
+
+            <div class="use-case">
+                <h4>🌊 调试代码 - Ambient</h4>
+                <p>平静的环境音，帮助你专注排查问题。音量建议 40%。</p>
+            </div>
+
+            <div class="use-case">
+                <h4>🎯 深度专注 - Deep Focus</h4>
+                <p>粉红噪音屏蔽杂音，适合处理复杂算法。音量建议 50%。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Share Section -->
+    <section class="social-share">
+        <h2>分享给朋友</h2>
+        <div class="share-buttons">
+            <a href="https://twitter.com/intent/tweet?text=发现了一个超棒的编程音乐工具%20ClaudeVibe%20🎵&url=https://yourusername.github.io/claudevibe" class="share-btn" target="_blank">
+                Twitter
+            </a>
+            <a href="https://www.reddit.com/submit?url=https://yourusername.github.io/claudevibe&title=ClaudeVibe - 沉浸式编程音乐" class="share-btn" target="_blank">
+                Reddit
+            </a>
+            <a href="mailto:?subject=推荐一个编程音乐工具&body=试试这个：https://yourusername.github.io/claudevibe" class="share-btn">
+                Email
+            </a>
+            <a href="#" class="share-btn" onclick="copyLink(); return false;">
+                复制链接
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>Made with ❤️ for Claude developers</p>
+        <p style="margin-top: 16px;">
+            <a href="https://github.com/yourusername/claudevibe">GitHub</a> ·
+            <a href="mailto:contact@example.com">Contact</a> ·
+            <a href="#privacy">Privacy</a>
+        </p>
+        <p style="margin-top: 24px; font-size: 13px;">
+            © 2026 ClaudeVibe · MIT License
+        </p>
+    </footer>
+
+    <script>
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('链接已复制！');
+            });
+        }
+
+        // PWA 安装提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // 可以在这里显示自定义安装按钮
+            console.log('PWA 可以安装');
+        });
+    </script>
+</body>
+</html>
